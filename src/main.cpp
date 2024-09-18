@@ -25,7 +25,7 @@ const int DEBOUNCE_DELAY = 50;
 
 bool is_auto_mode = false; // auto mode
 
-const unsigned long delayTime = 100; // 20ms
+const unsigned long delayTime = 100; // 
 
 void setup() {
   Serial.begin(115200);
@@ -86,7 +86,7 @@ void loop() {
     launchingDegree = 60;
     launchingServo.write(launchingDegree);
 
-    // 20ms後にモーターを回す
+    // 100ms後にモーターを回す
     if (currentMillis >= delayTime) {
       windingMotor.run(127, 0); // モーターを回し続ける
     }

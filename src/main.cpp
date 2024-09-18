@@ -19,6 +19,14 @@ const int LAUNCHING_SERVO_PIN = 4;
 /* MOTOR FUNCTION */
 void stopMotor();
 
+const uint8_t LAUNCH_LIMIT_PIN = 32;
+
+const int DEBOUNCE_DELAY = 50;
+
+bool is_auto_mode = false; // auto mode
+
+const unsigned long delayTime = 100; // 20ms
+
 void setup() {
   Serial.begin(115200);
 
@@ -28,16 +36,16 @@ void setup() {
                 bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4],
                 bt_mac[5]);
 
-  PS4.begin("48:E7:29:A3:C5:0E"); //TODO コントローラーのアドレスに合わせる
+  PS4.begin("48:E7:29:A3:C5:0E"); // TODO コントローラーのアドレスに合わせる
   Serial.printf("ready.\r\n");
 
   launchingServo.attach(LAUNCHING_SERVO_PIN, 500, 2500);
   launchingDegree = 116;
   launchingServo.write(launchingDegree);
+  pinMode(LAUNCH_LIMIT_PIN, INPUT_PULLDOWN);
 }
 
 void loop() {
-
   if (!PS4.isConnected()) {
     Serial.printf("PS4 controller disconnected.\r\n");
     stopMotor();
@@ -57,12 +65,45 @@ void loop() {
   if (DEAD_ZONE > abs(PS4.LStickY()) && DEAD_ZONE > abs(PS4.RStickY())) {
     stopMotor();
   }
+  static bool share_pressed = false;
+  static unsigned long share_debounce_time = 0;
+
+  if (PS4.Share()) { // shareボタンを押したとき
+    if (!share_pressed &&
+        (millis() - share_debounce_time >
+         DEBOUNCE_DELAY)) { // share_pressがfalseかつ前回ボタンを押してから50ms以上経過
+      is_auto_mode = !is_auto_mode;
+      share_debounce_time = millis();
+    }
+    share_pressed = true;
+  } else {
+    share_pressed = false;
+  }
+
+  if (is_auto_mode) {
+    unsigned long currentMillis = millis();
+
+    launchingDegree = 60;
+    launchingServo.write(launchingDegree);
+
+    // 20ms後にモーターを回す
+    if (currentMillis >= delayTime) {
+      windingMotor.run(127, 0); // モーターを回し続ける
+    }
+
+    // リミットスイッチが押されたら停止
+    bool is_on_limit_switch = digitalRead(LAUNCH_LIMIT_PIN);
+    if (is_on_limit_switch) {
+      is_auto_mode = false;
+      windingMotor.run(0, 0); // モーター停止
+    }
+  }
 
   if (PS4.R2Value() > 15) {
     windingMotor.run(PS4.R2Value() / 2, 0); // 正転
   } else if (PS4.L2Value() > 15) {
     windingMotor.run(PS4.L2Value() / 2, 1); // 逆転
-  } else {
+  } else if (!is_auto_mode) {
     windingMotor.run(0, 0);
   }
 
@@ -71,7 +112,7 @@ void loop() {
     launchingServo.write(launchingDegree);
     delay(10);
   }
-  if (PS4.Left() && launchingDegree > 5) { // 発射方向
+  if (PS4.Left() && launchingDegree > 45) { // 発射方向
     launchingDegree -= 5;
     launchingServo.write(launchingDegree);
     delay(10);

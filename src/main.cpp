@@ -48,11 +48,11 @@ void loop() {
 
   if (DEAD_ZONE <= abs(PS4.RStickY())) {
     rightMotor.run(abs(PS4.RStickY()),
-                   (PS4.RStickY() > 0 ? 0 : 1)); // 右モーター
+                   (PS4.RStickY() > 0 ? 1 : 0)); // 右モーター
   }
   if (DEAD_ZONE <= abs(PS4.LStickY())) {
     leftMotor.run(abs(PS4.LStickY()),
-                  (PS4.LStickY() > 0 ? 0 : 1)); // 左モーター
+                  (PS4.LStickY() > 0 ? 1 : 0)); // 左モーター
   }
   if (DEAD_ZONE > abs(PS4.LStickY()) && DEAD_ZONE > abs(PS4.RStickY())) {
     stopMotor();

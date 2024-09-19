@@ -16,7 +16,7 @@ Servo launchingServo;
 int launchingDegree;
 const int LAUNCHING_SERVO_PIN = 4;
 
-unsigned long previous_millis = 0;
+uint32_t previous_millis = 0;
 
 const uint8_t LAUNCH_LIMIT_PIN = 32;
 
@@ -24,7 +24,7 @@ const int DEBOUNCE_DELAY = 50;
 
 bool is_auto_mode = false; // auto mode
 
-const unsigned long delay_time = 100; // 
+const uint16_t delay_time = 100; // 
 
 bool share_pressed = false;
 uint32_t share_debounce_time = 0;

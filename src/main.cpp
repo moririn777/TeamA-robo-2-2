@@ -17,7 +17,17 @@ int launchingDegree;
 const int LAUNCHING_SERVO_PIN = 4;
 
 unsigned long previous_millis = 0;
-const uint8_t delay_time = 20; // 20ms
+
+const uint8_t LAUNCH_LIMIT_PIN = 32;
+
+const int DEBOUNCE_DELAY = 50;
+
+bool is_auto_mode = false; // auto mode
+
+const unsigned long delay_time = 100; // 
+
+bool share_pressed = false;
+uint32_t share_debounce_time = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -28,16 +38,16 @@ void setup() {
                 bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4],
                 bt_mac[5]);
 
-  PS4.begin("48:E7:29:A3:C5:0E"); //TODO コントローラーのアドレスに合わせる
+  PS4.begin("48:E7:29:A3:C5:0E"); 
   Serial.printf("ready.\r\n");
 
   launchingServo.attach(LAUNCHING_SERVO_PIN, 500, 2500);
   launchingDegree = 116;
   launchingServo.write(launchingDegree);
+  pinMode(LAUNCH_LIMIT_PIN, INPUT_PULLDOWN);
 }
 
 void loop() {
-
   if (!PS4.isConnected()) {
     Serial.printf("PS4 controller disconnected.\r\n");
     rightMotor.run(0,0);
@@ -61,11 +71,42 @@ void loop() {
     leftMotor.run(0,0);
   }
 
+  if (PS4.Share()) { // shareボタンを押したとき
+    if (!share_pressed &&
+        (millis() - share_debounce_time >
+         DEBOUNCE_DELAY)) { // share_pressがfalseかつ前回ボタンを押してから50ms以上経過
+      is_auto_mode = !is_auto_mode;
+      share_debounce_time = millis();
+    }
+    share_pressed = true;
+  } else {
+    share_pressed = false;
+  }
+
+  if (is_auto_mode) {
+    uint32_t currentMillis = millis();
+
+    launchingDegree = 60;
+    launchingServo.write(launchingDegree);
+
+    // 100ms後にモーターを回す
+    if (currentMillis >= delay_time) {
+      windingMotor.run(127, 0); // モーターを回し続ける
+    }
+
+    // リミットスイッチが押されたら停止
+    bool is_on_limit_switch = digitalRead(LAUNCH_LIMIT_PIN);
+    if (is_on_limit_switch) {
+      is_auto_mode = false;
+      windingMotor.run(0, 0); // モーター停止
+    }
+  }
+
   if (PS4.R2Value() > 15) {
     windingMotor.run(PS4.R2Value() / 2, 0); // 正転
   } else if (PS4.L2Value() > 15) {
     windingMotor.run(PS4.L2Value() / 2, 1); // 逆転
-  } else {
+  } else if (!is_auto_mode) {
     windingMotor.run(0, 0);
   }
 

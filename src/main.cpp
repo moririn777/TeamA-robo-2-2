@@ -16,8 +16,6 @@ Servo launchingServo;
 int launchingDegree;
 const int LAUNCHING_SERVO_PIN = 4;
 
-/* MOTOR FUNCTION */
-void stopMotor();
 
 const uint8_t LAUNCH_LIMIT_PIN = 32;
 
@@ -51,7 +49,9 @@ void setup() {
 void loop() {
   if (!PS4.isConnected()) {
     Serial.printf("PS4 controller disconnected.\r\n");
-    stopMotor();
+    rightMotor.run(0,0);
+    leftMotor.run(0,0);
+    windingMotor.run(0,0);
     return;
   }
 
@@ -60,13 +60,14 @@ void loop() {
   if (DEAD_ZONE <= abs(PS4.RStickY())) {
     rightMotor.run(abs(PS4.RStickY()),
                    (PS4.RStickY() > 0 ? 1 : 0)); // 右モーター
+  }else{
+    rightMotor.run(0,0);
   }
   if (DEAD_ZONE <= abs(PS4.LStickY())) {
     leftMotor.run(abs(PS4.LStickY()),
                   (PS4.LStickY() > 0 ? 1 : 0)); // 左モーター
-  }
-  if (DEAD_ZONE > abs(PS4.LStickY()) && DEAD_ZONE > abs(PS4.RStickY())) {
-    stopMotor();
+  }else{
+    leftMotor.run(0,0);
   }
 
   if (PS4.Share()) { // shareボタンを押したとき
@@ -122,10 +123,4 @@ void loop() {
   if (PS4.PSButton()) {
     ESP.restart();
   }
-}
-
-/* STOP MOVING */
-void stopMotor() {
-  rightMotor.run(0, 0);
-  leftMotor.run(0, 0);
 }

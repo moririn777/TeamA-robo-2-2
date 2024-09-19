@@ -17,7 +17,7 @@ int launchingDegree;
 const int LAUNCHING_SERVO_PIN = 4;
 
 unsigned long previous_millis = 0;
-const unsigned long delay_time = 20; // 20ms
+const uint8_t delay_time = 20; // 20ms
 
 void setup() {
   Serial.begin(115200);
@@ -70,7 +70,7 @@ void loop() {
   }
 
   if (PS4.Right() && launchingDegree < 115) { // セット方向
-    unsigned long current_millis = millis();
+    uint32_t current_millis = millis();
     if (current_millis - previous_millis >= delay_time) {
         previous_millis = current_millis; 
         launchingDegree += 5;
@@ -78,7 +78,7 @@ void loop() {
     }
   }
   if (PS4.Left() && launchingDegree > 5) { // 発射方向
-    unsigned long current_millis = millis();
+    uint32_t current_millis = millis();
     if (current_millis - previous_millis >= delay_time) {
         previous_millis = current_millis; 
         launchingDegree -= 5;

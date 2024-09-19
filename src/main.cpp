@@ -27,6 +27,9 @@ bool is_auto_mode = false; // auto mode
 
 const unsigned long delay_time = 100; // 
 
+bool share_pressed = false;
+uint32_t share_debounce_time = 0;
+
 void setup() {
   Serial.begin(115200);
 
@@ -65,8 +68,6 @@ void loop() {
   if (DEAD_ZONE > abs(PS4.LStickY()) && DEAD_ZONE > abs(PS4.RStickY())) {
     stopMotor();
   }
-  bool share_pressed = false;
-  unsigned long share_debounce_time = 0;
 
   if (PS4.Share()) { // shareボタンを押したとき
     if (!share_pressed &&
@@ -81,7 +82,7 @@ void loop() {
   }
 
   if (is_auto_mode) {
-    unsigned long currentMillis = millis();
+    uint32_t currentMillis = millis();
 
     launchingDegree = 60;
     launchingServo.write(launchingDegree);

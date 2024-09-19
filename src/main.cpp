@@ -16,6 +16,9 @@ Servo launchingServo;
 int launchingDegree;
 const int LAUNCHING_SERVO_PIN = 4;
 
+unsigned long previous_millis = 0;
+const unsigned long delay_time = 20; // 20ms
+
 void setup() {
   Serial.begin(115200);
 
@@ -67,14 +70,20 @@ void loop() {
   }
 
   if (PS4.Right() && launchingDegree < 115) { // セット方向
-    launchingDegree += 5;
-    launchingServo.write(launchingDegree);
-    delay(10);
+    unsigned long current_millis = millis();
+    if (current_millis - previous_millis >= delay_time) {
+        previous_millis = current_millis; 
+        launchingDegree += 5;
+        launchingServo.write(launchingDegree);
+    }
   }
   if (PS4.Left() && launchingDegree > 5) { // 発射方向
-    launchingDegree -= 5;
-    launchingServo.write(launchingDegree);
-    delay(10);
+    unsigned long current_millis = millis();
+    if (current_millis - previous_millis >= delay_time) {
+        previous_millis = current_millis; 
+        launchingDegree -= 5;
+        launchingServo.write(launchingDegree);
+    }
   }
 
   if (PS4.PSButton()) {

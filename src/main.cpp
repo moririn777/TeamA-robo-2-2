@@ -25,7 +25,7 @@ const int DEBOUNCE_DELAY = 50;
 
 bool is_auto_mode = false; // auto mode
 
-const unsigned long delayTime = 100; // 
+const unsigned long delay_time = 100; // 
 
 void setup() {
   Serial.begin(115200);
@@ -36,7 +36,7 @@ void setup() {
                 bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4],
                 bt_mac[5]);
 
-  PS4.begin("48:E7:29:A3:C5:0E"); // TODO コントローラーのアドレスに合わせる
+  PS4.begin("48:E7:29:A3:C5:0E"); 
   Serial.printf("ready.\r\n");
 
   launchingServo.attach(LAUNCHING_SERVO_PIN, 500, 2500);
@@ -65,8 +65,8 @@ void loop() {
   if (DEAD_ZONE > abs(PS4.LStickY()) && DEAD_ZONE > abs(PS4.RStickY())) {
     stopMotor();
   }
-  static bool share_pressed = false;
-  static unsigned long share_debounce_time = 0;
+  bool share_pressed = false;
+  unsigned long share_debounce_time = 0;
 
   if (PS4.Share()) { // shareボタンを押したとき
     if (!share_pressed &&
@@ -87,7 +87,7 @@ void loop() {
     launchingServo.write(launchingDegree);
 
     // 100ms後にモーターを回す
-    if (currentMillis >= delayTime) {
+    if (currentMillis >= delay_time) {
       windingMotor.run(127, 0); // モーターを回し続ける
     }
 

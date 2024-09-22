@@ -16,27 +16,25 @@ Servo launchingServo;
 int launchingDegree;
 const int LAUNCHING_SERVO_PIN = 4;
 
-uint32_t previous_millis = 0;
-
+/*LIMIT SWITCH*/
 const uint8_t LAUNCH_LIMIT_PIN = 32;
 
+uint32_t previous_millis = 0;
 const int DEBOUNCE_DELAY = 50;
-
-bool is_auto_mode = false; // auto mode
-
-const uint16_t delay_time = 100; // 
+const uint16_t DELAY_TIME = 100; 
 
 bool share_pressed = false;
 uint32_t share_debounce_time = 0;
+bool is_auto_mode = false; // auto mode
 
 void setup() {
   Serial.begin(115200);
 
   uint8_t bt_mac[6];
-  esp_read_mac(bt_mac, ESP_MAC_BT);
+  /*esp_read_mac(bt_mac, ESP_MAC_BT);
   Serial.printf("Bluetooth Mac Address => %02X:%02X:%02X:%02X:%02X:%02X\r\n",
                 bt_mac[0], bt_mac[1], bt_mac[2], bt_mac[3], bt_mac[4],
-                bt_mac[5]);
+                bt_mac[5]);*/
 
   PS4.begin("48:E7:29:A3:C5:0E"); 
   Serial.printf("ready.\r\n");
@@ -90,7 +88,7 @@ void loop() {
     launchingServo.write(launchingDegree);
 
     // 100ms後にモーターを回す
-    if (currentMillis >= delay_time) {
+    if (currentMillis >= DELAY_TIME) {
       windingMotor.run(127, 0); // モーターを回し続ける
     }
 
@@ -112,7 +110,7 @@ void loop() {
 
   if (PS4.Right() && launchingDegree < 115) { // セット方向
     uint32_t current_millis = millis();
-    if (current_millis - previous_millis >= delay_time) {
+    if (current_millis - previous_millis >= DELAY_TIME) {
         previous_millis = current_millis; 
         launchingDegree += 5;
         launchingServo.write(launchingDegree);
@@ -120,7 +118,7 @@ void loop() {
   }
   if (PS4.Left() && launchingDegree > 5) { // 発射方向
     uint32_t current_millis = millis();
-    if (current_millis - previous_millis >= delay_time) {
+    if (current_millis - previous_millis >= DELAY_TIME) {
         previous_millis = current_millis; 
         launchingDegree -= 5;
         launchingServo.write(launchingDegree);
